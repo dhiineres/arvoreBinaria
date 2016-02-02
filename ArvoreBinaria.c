@@ -177,11 +177,43 @@ void Ler(T_Pessoa *X){
 	printf("\nEntre com o Nome : ");
 	scanf("%s",X->nome);
 }
-
-void salvar(Arvore_Binaria T){
+void resetar(){
+	FILE*arq;
+	arq = fopen("nodos.txt", "wb");
+	arq = NULL;
+}
+void salvar(Arvore_Binaria T, Fila_nodo *F){
+	Arvore_Binaria A;
 	FILE *arq;
+	arq = fopen("nodos.txt", "a");
+	if (arq != NULL){
+		if(T!=NULL){
+			fwrite(&(T->Elem), sizeof(T_Pessoa), 1, arq);
+			if(T->esq != NULL)
+				Enfileirar(&(*F),T->esq);
+			if(T->dir != NULL)
+				Enfileirar(&(*F),T->dir);
+			if (!Verifica_Fila_Vazia(*F)){
+				Desenfileirar(&(*F),&A);
+				salvar(A,&(*F));
+			}
+		}
+		fclose(arq);
+	}
 }
 
+void recuperar(Arvore_Binaria *T){
+	T_Pessoa X;
+	FILE*arq;
+	arq = fopen("nodos.txt", "r");
+	if(arq != NULL){
+		while(!feof(arq)){
+			fread(&(X), sizeof(T_Pessoa), 1, arq);
+			Insere_Elemento_Arvore(T, X);
+		}
+		fclose(arq);
+	}
+}
 void Menu()
 {
 printf("M E N U - L I S T A   E S T A T I C A  E N C A D E A D A\n");
@@ -196,40 +228,54 @@ printf("8 - Sair\n");
 printf("Opcao:  ");	   
 }
 
-int main(int argc, char **argv)
-{ Arvore_Binaria T;
-Fila_nodo F;
-int op;
-T_Pessoa X;
-T = NULL;  // torna a árvore vazia inicialmente
-Criar_Fila_Vazia(&F);
-do { Menu();
-scanf("%d",&op);
-switch (op) {
-case 1:Ler(&X);
-Insere_Elemento_Arvore(&T,X);
-break;
-case 2:Ler(&X);
-removeElemArvore(&T,&X);
-printf("\n Elemento removido : \n");
-Exibir_Elemento(X);
-break;
-case 3:pre_ordem(T);
-break;
-case 4: in_ordem(T);
-break;
-case 5: pos_ordem(T);
-break;
-case 6: por_nivel(T,&F);
-break;
-case 7: Ler(&X);
-busca_elem_arvore(T,X);
-break;
-case 8: printf("\nObrigado por usar nosso Software\n");
-break;
-default : printf("Opção não existente\n");
-break;
-}   	  
-}while(op!=8);
-return 0;
+int main(int argc, char **argv){
+	Arvore_Binaria T;
+	Fila_nodo F;
+	int op;
+	T_Pessoa X;
+	T = NULL;  // torna a árvore vazia inicialmente
+	Criar_Fila_Vazia(&F);
+	recuperar(&T);
+	do {
+		Menu();
+		scanf("%d",&op);
+		switch (op) {
+			case 1:
+				Ler(&X);
+				Insere_Elemento_Arvore(&T,X);
+			break;
+			case 2:
+				Ler(&X);
+				removeElemArvore(&T,&X);
+				printf("\n Elemento removido : \n");
+				Exibir_Elemento(X);
+			break;
+			case 3:
+				pre_ordem(T);
+			break;
+			case 4:
+				in_ordem(T);
+			break;
+			case 5:
+				pos_ordem(T);
+			break;
+			case 6:
+				por_nivel(T,&F);
+			break;
+			case 7:
+				Ler(&X);
+				busca_elem_arvore(T,X);
+			break;
+			case 8:
+				printf("\nObrigado por usar nosso Software\n");
+			break;
+			default : printf("Opção não existente\n");
+			break;
+		} 
+		system("pause");
+		system("cls");  
+		resetar();
+		salvar(T, &F);	  
+	}while(op!=8);
+	return 0;
 }
